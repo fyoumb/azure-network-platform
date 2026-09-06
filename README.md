@@ -15,3 +15,11 @@ The platform will model a production-inspired Azure network architecture with:
 - Centralized network and security controls
 - Infrastructure as Code and automation
 
+## Technology Stack
+
+- Microsoft Azure
+- Terraform
+- GitHub Actions
+- Python
+- Ansible
+
