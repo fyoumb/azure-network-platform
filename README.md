@@ -23,3 +23,10 @@ The platform will model a production-inspired Azure network architecture with:
 - Python
 - Ansible
 
+## Engineering Principles
+
+- Infrastructure changes are version controlled
+- Changes are reviewed through pull requests
+- Infrastructure is deployed through automated workflows
+- Network architecture is designed for resilience and security
+
