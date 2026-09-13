@@ -44,3 +44,16 @@ resource "azurerm_virtual_network_peering" "spoke1_to_hub" {
   virtual_network_name      = module.spoke1.vnet_name
   remote_virtual_network_id = azurerm_virtual_network.hub.id
 }
+resource "azurerm_virtual_network_peering" "hub_to_spoke2" {
+  name                      = "peer-hub-to-spoke2"
+  resource_group_name       = azurerm_resource_group.mission90.name
+  virtual_network_name      = azurerm_virtual_network.hub.name
+  remote_virtual_network_id = module.spoke2.vnet_id
+}
+
+resource "azurerm_virtual_network_peering" "spoke2_to_hub" {
+  name                      = "peer-spoke2-to-hub"
+  resource_group_name       = module.spoke2.resource_group_name
+  virtual_network_name      = module.spoke2.vnet_name
+  remote_virtual_network_id = azurerm_virtual_network.hub.id
+}
