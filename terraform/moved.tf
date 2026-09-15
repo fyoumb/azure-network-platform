@@ -32,3 +32,13 @@ moved {
   from = azurerm_subnet.hub
   to   = module.hub.azurerm_subnet.hub
 }
+
+moved {
+  from = module.spoke1
+  to   = module.spokes["spoke1"]
+}
+
+moved {
+  from = module.spoke2
+  to   = module.spokes["spoke2"]
+}
