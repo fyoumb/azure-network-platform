@@ -42,3 +42,23 @@ moved {
   from = module.spoke2
   to   = module.spokes["spoke2"]
 }
+
+moved {
+  from = azurerm_virtual_network_peering.spoke1_to_hub
+  to   = azurerm_virtual_network_peering.spoke_to_hub["spoke1"]
+}
+
+moved {
+  from = azurerm_virtual_network_peering.hub_to_spoke1
+  to   = azurerm_virtual_network_peering.hub_to_spoke["spoke1"]
+}
+
+moved {
+  from = azurerm_virtual_network_peering.spoke2_to_hub
+  to   = azurerm_virtual_network_peering.spoke_to_hub["spoke2"]
+}
+
+moved {
+  from = azurerm_virtual_network_peering.hub_to_spoke2
+  to   = azurerm_virtual_network_peering.hub_to_spoke["spoke2"]
+}
