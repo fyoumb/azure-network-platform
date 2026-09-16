@@ -15,6 +15,14 @@ locals {
       vnet_address_space       = ["10.2.0.0/24"]
       workload_subnet_prefixes = ["10.2.0.0/26"]
     }
+
+    spoke3 = {
+      location                 = "eastus"
+      project                  = "mission90"
+      environment              = "dev"
+      vnet_address_space       = ["10.3.0.0/24"]
+      workload_subnet_prefixes = ["10.3.0.0/26"]
+    }
   }
 }
 
