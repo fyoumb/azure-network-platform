@@ -16,6 +16,14 @@ variable "vnet_address_space" {
 variable "workload_subnet_prefixes" {
   type        = list(string)
   description = "Address prefixes for the workload subnet"
+
+  validation {
+    condition = alltrue([
+      for prefix in var.workload_subnet_prefixes :
+      can(cidrhost(prefix, 0))
+    ])
+    error_message = "All workload subnet prefixes must be valid CIDR blocks."
+  }
 }
 
 variable "project" {
@@ -26,4 +34,9 @@ variable "project" {
 variable "environment" {
   type        = string
   description = "Name of the environment"
+
+  validation {
+    condition     = contains(["dev", "test", "prod"], var.environment)
+    error_message = "Environment must be dev, test, or prod."
+  }
 }
