@@ -1,5 +1,5 @@
 resource "azurerm_virtual_network_peering" "hub_to_spoke" {
-  for_each=local.spokes
+  for_each                  = local.spokes
   name                      = "peer-hub-to-${each.key}"
   resource_group_name       = module.hub.resource_group_name
   virtual_network_name      = module.hub.vnet_name
