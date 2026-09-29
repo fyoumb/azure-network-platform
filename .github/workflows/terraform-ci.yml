@@ -3,6 +3,10 @@ name: Terraform CI
 on:
   pull_request:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   terraform-checks:
     runs-on: ubuntu-latest
@@ -19,11 +23,21 @@ jobs:
         with:
           terraform_version: 1.16.1
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
       - name: Check Terraform formatting
         run: terraform fmt -check -recursive
 
       - name: Initialize Terraform
-        run: terraform init -backend=false
+        run: terraform init
 
       - name: Validate Terraform
         run: terraform validate
+
+      - name: Plan Terraform changes
+        run: terraform plan -no-color
