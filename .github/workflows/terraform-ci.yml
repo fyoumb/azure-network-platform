@@ -10,6 +10,10 @@ permissions:
 jobs:
   terraform-checks:
     runs-on: ubuntu-latest
+
+    env:
+      TF_VAR_location: "East US"
+
     defaults:
       run:
         working-directory: terraform
@@ -40,4 +44,4 @@ jobs:
         run: terraform validate
 
       - name: Plan Terraform changes
-        run: terraform plan -no-color
+        run: terraform plan -no-color -input=false
