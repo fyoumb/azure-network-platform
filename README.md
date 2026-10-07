@@ -23,6 +23,10 @@ The platform will model a production-inspired Azure network architecture with:
 - Python
 - Ansible
 
+## CI/CD
+
+Pull requests are evaluated by GitHub Actions. Terraform validation runs only when Terraform configuration or the Terraform CI workflow changes.
+
 ## Engineering Principles
 
 - Infrastructure changes are version controlled
