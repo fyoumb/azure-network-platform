@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       terraform: ${{ steps.filter.outputs.terraform }}
     steps:
@@ -26,7 +26,7 @@ jobs:
   terraform-checks:
     needs: detect-changes
     if: needs.detect-changes.outputs.terraform == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     env:
       TF_VAR_location: "East US"
@@ -37,15 +37,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.16.1
 
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
