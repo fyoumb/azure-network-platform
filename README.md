@@ -25,7 +25,23 @@ The platform will model a production-inspired Azure network architecture with:
 
 ## CI/CD
 
-Pull requests are evaluated by GitHub Actions. Terraform validation runs only when Terraform configuration or the Terraform CI workflow changes.
+### Pull Request Checks
+
+Pull requests are evaluated by GitHub Actions. When Terraform configuration or the Terraform CI workflow changes, the pipeline checks formatting, initializes Terraform, validates the configuration, and generates a preview plan.
+
+### Deployment
+
+The Terraform Deploy workflow is manually triggered from the main branch.
+
+1. The plan job checks formatting, initializes and validates Terraform, and saves a deployment plan.
+2. The saved plan is uploaded as a workflow artifact with one-day retention.
+3. The apply job waits for approval through the protected dev environment.
+4. The reviewer inspects the plan output before approving.
+5. After approval, the apply job downloads and applies the saved plan.
+
+Both jobs authenticate to Azure through OpenID Connect (OIDC), without stored client secrets. Terraform state is stored remotely in Azure Blob Storage.
+
+The first deployment run successfully verified the approval gate and saved-plan execution with no infrastructure changes.
 
 ## Engineering Principles
 
