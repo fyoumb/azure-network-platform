@@ -43,6 +43,10 @@ Both jobs authenticate to Azure through OpenID Connect (OIDC), without stored cl
 
 The first deployment run successfully verified the approval gate and saved-plan execution with no infrastructure changes.
 
+Deployment runs use the workflow-level concurrency group `terraform-deploy-dev`. Only one run in this group can be active at a time, covering planning, approval, and applying. With `cancel-in-progress: false`, a new run does not interrupt the active deployment.
+
+Concurrency was verified by triggering two runs: the second waited before planning until the first completed, then required its own approval. Both plans reported no changes, and both deployments succeeded.
+
 ## Engineering Principles
 
 - Infrastructure changes are version controlled
