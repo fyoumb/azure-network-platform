@@ -47,6 +47,16 @@ Deployment runs use the workflow-level concurrency group `terraform-deploy-dev`.
 
 Concurrency was verified by triggering two runs: the second waited before planning until the first completed, then required its own approval. Both plans reported no changes, and both deployments succeeded.
 
+### Terraform State Locking
+
+CI plans, deployment plans, and saved-plan applies use `-lock-timeout=5m`. If the remote state is locked, Terraform retries acquiring the lock for up to five minutes before failing.
+
+Workflow concurrency coordinates deployment runs in GitHub Actions. Terraform state locking protects the shared state during Terraform operations, including operations started outside GitHub Actions. The state lock is released after planning; it is not held while waiting for deployment approval.
+
+If lock acquisition times out, check for active Terraform operations before considering `terraform force-unlock`. Only release a confirmed abandoned lock. After recovery, generate and review a fresh plan before approving deployment.
+
+PR checks and Terraform Deploy #5 passed with the timeout configured. The deployment applied the saved plan with 0 resources added, changed, or destroyed. Actual lock contention has not been tested.
+
 ## Engineering Principles
 
 - Infrastructure changes are version controlled
