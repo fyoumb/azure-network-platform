@@ -49,7 +49,7 @@ jobs:
         run: terraform validate
 
       - name: Create saved Terraform plan
-        run: terraform plan -no-color -input=false -out=tfplan
+        run: terraform plan -no-color -input=false -lock-timeout=5m -out=tfplan
 
       - name: Upload saved Terraform plan
         uses: actions/upload-artifact@v7
@@ -96,4 +96,4 @@ jobs:
         run: terraform init -input=false -lockfile=readonly
 
       - name: Apply saved Terraform plan
-        run: terraform apply -input=false tfplan
+        run: terraform apply -input=false -lock-timeout=5m tfplan
