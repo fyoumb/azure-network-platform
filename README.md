@@ -57,6 +57,28 @@ If lock acquisition times out, check for active Terraform operations before cons
 
 PR checks and Terraform Deploy #5 passed with the timeout configured. The deployment applied the saved plan with 0 resources added, changed, or destroyed. Actual lock contention has not been tested.
 
+### Drift Detection
+
+The Terraform Drift Detection workflow runs daily at 10:17 UTC and can also be triggered manually from main. It authenticates to Azure through OIDC and runs a plan without applying changes.
+
+The workflow uses `terraform plan -detailed-exitcode` with `-lock-timeout=5m`:
+
+- Exit code 0: no changes proposed; the run succeeds.
+- Exit code 1: planning failed; the run fails.
+- Exit code 2: changes proposed; the run succeeds with a warning requiring review.
+
+Results appear in the GitHub Actions run summary, with the full plan available in the job logs. A successful run can therefore still indicate changes requiring attention.
+
+Proposed changes may reflect infrastructure drift or configuration changes that have not yet been deployed. Review the plan before deciding whether to update the configuration or restore the infrastructure through the approved deployment workflow. No automatic remediation is performed.
+
+The `terraform-drift-dev` concurrency group coordinates drift-check runs independently of deployment runs. Terraform state locking protects against simultaneous operations on the shared state.
+
+Validation:
+- Run #1 reported no changes.
+- After changing the hub resource group's ManagedBy tag from terraform to manual-test in Azure, run #2 proposed restoring it to terraform and displayed a warning.
+- After manually restoring the tag, run #3 reported no changes.
+- The daily schedule is configured; its first scheduled execution has not yet been verified.
+
 ## Engineering Principles
 
 - Infrastructure changes are version controlled
