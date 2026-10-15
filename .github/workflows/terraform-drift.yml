@@ -1,0 +1,72 @@
+name: Terraform Drift Detection
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-drift-dev
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+
+    env:
+      TF_VAR_location: "East US"
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.1
+          terraform_wrapper: false
+
+      - name: Login to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Initialize Terraform
+        run: terraform init -input=false -lockfile=readonly
+
+      - name: Validate Terraform
+        run: terraform validate
+
+      - name: Check for drift
+        shell: bash
+        run: |
+          set +e
+          terraform plan -no-color -input=false -lock-timeout=5m -detailed-exitcode
+          exit_code=$?
+          set -e
+
+          case "$exit_code" in
+            0)
+              echo "### No changes detected" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            2)
+              echo "### Changes detected — review required" >> "$GITHUB_STEP_SUMMARY"
+              echo "Review the plan in the logs. Changes may reflect drift or configuration not yet deployed." >> "$GITHUB_STEP_SUMMARY"
+              echo "::warning::Terraform proposed changes. Review the plan."
+              ;;
+            *)
+              echo "### Drift check failed" >> "$GITHUB_STEP_SUMMARY"
+              echo "Terraform could not complete the plan. Review the logs." >> "$GITHUB_STEP_SUMMARY"
+              exit "$exit_code"
+              ;;
+          esac
+
