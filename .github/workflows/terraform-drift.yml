@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   id-token: write
+  issues: write
 
 concurrency:
   group: terraform-drift-dev
@@ -49,12 +50,15 @@ jobs:
         run: terraform validate
 
       - name: Check for drift
+        id: plan
         shell: bash
         run: |
           set +e
           terraform plan -no-color -input=false -lock-timeout=5m -detailed-exitcode
           exit_code=$?
           set -e
+
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
 
           case "$exit_code" in
             0)
@@ -72,3 +76,56 @@ jobs:
               ;;
           esac
 
+      - name: Create or update drift review issue
+        if: steps.plan.outputs.exit_code == '2'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const marker = '<!-- terraform-drift-dev -->';
+            const title = 'Terraform dev: changes detected — review required';
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            const body = [
+              marker,
+              'Terraform proposed changes in the dev environment.',
+              '',
+              `Latest detection: [workflow run #${context.runNumber}](${runUrl})`,
+              '',
+              'Changes may reflect infrastructure drift or configuration not yet deployed.',
+              'Review the plan in the job logs before deciding how to proceed.',
+              '',
+              'No changes were applied by this workflow.',
+              'Close this issue after review and verification of the resolution.'
+            ].join('\n');
+
+            const issues = await github.paginate(
+              github.rest.issues.listForRepo,
+              { owner, repo, state: 'open', per_page: 100 }
+            );
+
+            const existing = issues.find(issue =>
+              !issue.pull_request &&
+              issue.body?.includes(marker)
+            );
+
+            let issue;
+            if (existing) {
+              ({ data: issue } = await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body
+              }));
+            } else {
+              ({ data: issue } = await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body
+              }));
+            }
+
+            await core.summary
+              .addLink('Review tracking issue', issue.html_url)
+              .write();
