@@ -73,11 +73,26 @@ Proposed changes may reflect infrastructure drift or configuration changes that 
 
 The `terraform-drift-dev` concurrency group coordinates drift-check runs independently of deployment runs. Terraform state locking protects against simultaneous operations on the shared state.
 
+#### Review Tracking Issues
+
+When Terraform proposes changes (exit code 2), the workflow creates a GitHub issue or updates the existing open issue identified by the hidden marker `<!-- terraform-drift-dev -->`. This avoids creating a new issue for each run while a finding remains open.
+
+The issue links to the latest workflow run, and the run summary links back to the issue. The workflow uses `issues: write` permission to create and update issues.
+
+The automation replaces the issue body when updating it, so record investigation and resolution notes in comments.
+
+A plan reporting no changes does not automatically close an existing issue. After reviewing the finding, resolving it, and verifying a plan with no proposed changes, manually close the issue.
+
 Validation:
-- Run #1 reported no changes.
-- After changing the hub resource group's ManagedBy tag from terraform to manual-test in Azure, run #2 proposed restoring it to terraform and displayed a warning.
-- After manually restoring the tag, run #3 reported no changes.
-- The daily schedule is configured; its first scheduled execution has not yet been verified.
+
+- Run 1 reported no changes.
+- After changing the hub resource group's `ManagedBy` tag from `terraform` to `manual-test` in Azure, run 2 proposed restoring it to `terraform` and displayed a warning.
+- After manually restoring the tag, run 3 reported no changes.
+- Scheduled run 4 on October 16, 2026, completed successfully and reported no changes.
+- Run 5 reported no changes and skipped the issue tracking step.
+- After repeating the tag change, run 6 created issue [34](https://github.com/fyoumb/azure-network-platform/issues/34).
+- Run 7 detected the persistent change and updated the same issue without creating a duplicate.
+- After manually restoring the tag, run 8 reported no changes and skipped the issue tracking step. Issue 34 remained open until manually closed as completed with a resolution comment.
 
 ## Engineering Principles
 
